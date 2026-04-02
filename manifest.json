@@ -1,8 +1,14 @@
 {
   "manifest_version": 3,
-  "name": "ViBe Auto Course",
+  "name": "ViBe Auto",
   "version": "1.0",
-  "description": "Automates video waiting and quiz solving on ViBe using Gemini AI.",
+  "description": "Automates video waiting and solves multiple-choice quizzes on ViBe using Gemini and Groq AI.",
+  "author": "frieren(?)",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "permissions": [
     "storage",
     "scripting",

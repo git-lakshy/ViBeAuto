@@ -48,16 +48,11 @@ function simulateClickEvents(el) {
 async function checkPageState() {
     if (isProcessingQuiz) return;
     
-    // 1. Look for visible quiz elements
     const optionsEls = Array.from(document.querySelectorAll('button[role="radio"], input[type="radio"]')).filter(isVisible);
-    
-    // Critically include <a> tags because "Next Lesson" might be a React Router Link!
     const clickableEls = Array.from(document.querySelectorAll('button, a')).filter(isVisible);
-    
-    // Helper to safely extract text from any button/link
     const getText = (el) => (el.innerText || el.textContent || "").trim().toLowerCase();
     
-    // Prioritize Finish, Check, Submit - BUT EXCLUDE "Submit Flag"
+
     const validSubmitBtns = clickableEls.filter(el => {
          const txt = getText(el);
          return (txt.includes('submit') || txt.includes('check') || txt.includes('finish')) && !txt.includes('flag');
@@ -69,12 +64,11 @@ async function checkPageState() {
         return (txt.includes('next lesson') || txt.includes('continue')) && txt.length < 35;
     });
 
-    // Grab the full text of the main content area to give maximum context
     const mainContainer = document.querySelector('main') || document.body;
     const pageText = (mainContainer.innerText || mainContainer.textContent).toLowerCase();
     const fullBodyText = (document.body.innerText || document.body.textContent).toLowerCase();
 
-    // SCENARIO -1: Error Modals & Popups (Highest Priority)
+    // SCENARIO -1: Error Modals & Popups
     if (fullBodyText.includes('failed to stop video') || fullBodyText.includes('unable to save progress')) {
         const errorContinueBtn = clickableEls.find(el => getText(el) === 'continue');
         if (errorContinueBtn && !errorContinueBtn.dataset.vibePendingClick) {
@@ -82,20 +76,20 @@ async function checkPageState() {
             console.log("ViBe Auto: Detected 'Failed to stop video' error popup. Clicking Continue...");
             setTimeout(() => simulateClickEvents(errorContinueBtn), 1000);
         }
-        return; // Override everything so the modal is dealt with first
+        return;
     }
 
-    // SCENARIO 0: Quiz is visibly completed (Results page)
+    // SCENARIO 0: Quiz Completed
     if (pageText.includes('quiz completed') || pageText.includes('passed!') || pageText.includes('you scored')) {
         if (clearNextLessonBtn && !clearNextLessonBtn.dataset.vibePendingClick) {
             clearNextLessonBtn.dataset.vibePendingClick = "true";
             console.log("ViBe Auto: Quiz completed explicitly detected. Clicking Next Lesson...");
             setTimeout(() => simulateClickEvents(clearNextLessonBtn), 1000);
         }
-        return; // CRITICAL: Stop everything else so we don't try to solve a finished quiz
+        return;
     }
 
-    // SCENARIO A: A Quiz is currently on screen
+    // SCENARIO A: Quiz on screen
     if (optionsEls.length > 0) {
         const isAnswered = optionsEls.some(el => el.getAttribute('aria-checked') === 'true' || el.checked || el.dataset.state === 'checked');
         if (isAnswered) {
@@ -115,7 +109,7 @@ async function checkPageState() {
             const currentAttempt = parseInt(attemptMatch[1], 10);
             const maxAttempts = parseInt(attemptMatch[2], 10);
             
-            // Warn if halfway or more through attempts
+
             if (currentAttempt >= Math.max(1, Math.floor(maxAttempts / 2)) && window.vibeWarnedAttempt !== currentAttempt) {
                 window.vibeWarnedAttempt = currentAttempt;
                 const pauseAuto = window.confirm(`ViBe Auto Warning: You are on Attempt ${currentAttempt} of ${maxAttempts}!\nSince AI can make mistakes, do you want to pause automation and manually answer this?\n\nClick OK to PAUSE automation, or Cancel to let AI risk it.`);
@@ -129,7 +123,7 @@ async function checkPageState() {
         
         isProcessingQuiz = true;
         
-        // Deep extract options text
+
         const optionsTextList = optionsEls.map(el => {
             let text = (el.innerText || el.textContent).trim();
             if (!text && el.parentElement) {
@@ -138,14 +132,14 @@ async function checkPageState() {
             return text;
         });
         
-        // Exclude Next Lesson from the quiz action button fallback
+
         const genericNextBtn = clickableEls.find(el => {
              const txt = getText(el);
              return txt.includes('next') && !txt.includes('lesson');
         });
         const actionBtn = submitQuizBtn || nextQuestionBtn || genericNextBtn;
         
-        // Extract overarching context to enhance AI accuracy
+
         const pageTitle = document.title ? document.title.trim() : "";
         const headerEl = document.querySelector('header');
         const headerText = headerEl ? (headerEl.innerText || headerEl.textContent).trim() : "";
@@ -157,7 +151,7 @@ async function checkPageState() {
         return;
     }
 
-    // SCENARIO B: No quiz is on screen. Check if we should click Next Lesson.
+    // SCENARIO B: No Quiz
     const videoEl = document.querySelector('video');
     const isVideoPlaying = videoEl && !videoEl.paused && !videoEl.ended;
 
