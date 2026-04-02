@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "ViBe Auto Course",
+  "version": "1.0",
+  "description": "Automates video waiting and quiz solving on ViBe using Gemini AI.",
+  "permissions": [
+    "storage",
+    "scripting",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://vibe.vicharanashala.ai/*",
+    "https://generativelanguage.googleapis.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://vibe.vicharanashala.ai/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

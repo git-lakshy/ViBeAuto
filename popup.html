@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ViBe Auto</title>
+    <style>
+        body { width: 300px; padding: 15px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        input[type="text"], input[type="password"] { width: 100%; box-sizing: border-box; margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { width: 100%; padding: 10px; margin-bottom: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        #saveKeyBtn { background-color: #007bff; color: white; }
+        #saveKeyBtn:hover { background-color: #0056b3; }
+        .success { color: green; display: none; margin-bottom: 10px; font-size: 0.9em; text-align: center; }
+        label { font-size: 0.9em; font-weight: bold; display: block; margin-bottom: 5px; }
+        h3 { margin-top: 0; color: #333; text-align: center; }
+        hr { border: 0; border-top: 1px solid #eee; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <h3>ViBe Auto</h3>
+    
+    <label>Gemini API Key:</label>
+    <input type="password" id="geminiApiKey" placeholder="AI Studio Key">
+    
+    <label>Groq API Key:</label>
+    <input type="password" id="groqApiKey" placeholder="Groq Cloud Key">
+
+    <label>Select AI Model:</label>
+    <select id="modelChoice" style="width: 100%; margin-bottom: 15px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        <option value="gemini">Gemini 3.1 Flash</option>
+        <option value="groq">Groq LLaMA 3.1 8B</option>
+    </select>
+
+    <div id="saveStatus" class="success">Saved!</div>
+    <button id="saveKeyBtn">Save Settings</button>
+    
+    <hr>
+    
+    <label>Automation Status:</label>
+    <button id="toggleAutoBtn" style="background-color: #eee; color: #333;">Enable Automation</button>
+
+    <script src="popup.js"></script>
+</body>
+</html>
