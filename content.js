@@ -1,8 +1,10 @@
 // Inject Camera Virtualization Patch
-const vcamScript = document.createElement('script');
-vcamScript.src = chrome.runtime.getURL('camera_patch.js');
-vcamScript.onload = () => vcamScript.remove();
-(document.head || document.documentElement).appendChild(vcamScript);
+if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
+    const vcamScript = document.createElement('script');
+    vcamScript.src = chrome.runtime.getURL('camera_patch.js');
+    vcamScript.onload = () => vcamScript.remove();
+    (document.head || document.documentElement).appendChild(vcamScript);
+}
 
 let loopInterval = null;
 let isProcessingQuiz = false;

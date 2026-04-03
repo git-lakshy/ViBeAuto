@@ -42,7 +42,12 @@
   "web_accessible_resources": [
     {
       "resources": ["camera_patch.js"],
-      "matches": ["https://vibe.vicharanashala.ai/*"]
+      "matches": [
+        "https://vibe.vicharanashala.ai/*",
+        "https://*.youtube.com/*",
+        "https://*.youtube-nocookie.com/*",
+        "https://*.vimeo.com/*"
+      ]
     }
   ]
 }
