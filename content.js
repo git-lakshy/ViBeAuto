@@ -1,13 +1,8 @@
-// --- Utility: Extension Context Safety ---
-const isContextValid = () => !!chrome.runtime && !!chrome.runtime.id;
-
 // Inject Camera Virtualization Patch
-if (isContextValid()) {
-    const vcamScript = document.createElement('script');
-    vcamScript.src = chrome.runtime.getURL('camera_patch.js');
-    vcamScript.onload = () => vcamScript.remove();
-    (document.head || document.documentElement).appendChild(vcamScript);
-}
+const vcamScript = document.createElement('script');
+vcamScript.src = chrome.runtime.getURL('camera_patch.js');
+vcamScript.onload = () => vcamScript.remove();
+(document.head || document.documentElement).appendChild(vcamScript);
 
 let loopInterval = null;
 let isProcessingQuiz = false;
@@ -15,29 +10,25 @@ let forcedVideoSpeed = 1.0;
 let rateLimitCounter = 0;
 
 // Initialize and Start Feature Enforcement
-if (isContextValid()) {
-    chrome.storage.local.get(['autoEnabled', 'vcamEnabled', 'vcamSource', 'vidSpeed', 'speedEnabled'], (res) => {
-        if (!isContextValid()) return;
-        forcedVideoSpeed = parseFloat(res.vidSpeed || 11);
-        
-        // Constant enforcement loop
-        setInterval(() => {
-            if (!isContextValid()) return;
-            chrome.storage.local.get(['speedEnabled', 'autoEnabled'], (s) => {
-                if (isContextValid() && (s.speedEnabled || s.autoEnabled)) enforceVideoFeatures(s.speedEnabled);
-            });
-        }, 1000);
+chrome.storage.local.get(['autoEnabled', 'vcamEnabled', 'vcamSource', 'vidSpeed', 'speedEnabled'], (res) => {
+    forcedVideoSpeed = parseFloat(res.vidSpeed || 11);
+    
+    // Constant enforcement loop
+    setInterval(() => {
+        chrome.storage.local.get(['speedEnabled', 'autoEnabled'], (s) => {
+            if (s.speedEnabled || s.autoEnabled) enforceVideoFeatures(s.speedEnabled);
+        });
+    }, 1000);
 
-        if (window.location.hostname === 'vibe.vicharanashala.ai') {
-            if (res.vcamEnabled) updateVCam(true, res.vcamSource);
-            if (res.autoEnabled) startAutomation();
-        }
-    });
-}
+    if (window.location.hostname === 'vibe.vicharanashala.ai') {
+        if (res.vcamEnabled) updateVCam(true, res.vcamSource);
+        if (res.autoEnabled) startAutomation();
+    }
+});
 
 chrome.storage.onChanged.addListener((changes, namespace) => {
-    if (isContextValid() && namespace === 'local') {
-        if (changes.autoEnabled) shifts(changes.autoEnabled.newValue);
+    if (namespace === 'local') {
+        if (changes.autoEnabled) changes.autoEnabled.newValue ? startAutomation() : stopAutomation();
         if (changes.vcamEnabled || changes.vcamSource) {
             chrome.storage.local.get(['vcamEnabled', 'vcamSource'], (res) => updateVCam(res.vcamEnabled, res.vcamSource));
         }
@@ -45,10 +36,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     }
 });
 
-function shifts(on) { if (on) startAutomation(); else stopAutomation(); }
-
 function updateVCam(enabled, source) {
-    if (!isContextValid()) return;
     window.dispatchEvent(new CustomEvent('vibe-update-vcam', { detail: { enabled: !!enabled, source: source || null } }));
 }
 
@@ -74,7 +62,6 @@ const simulateClick = (el) => {
 };
 
 async function checkPageState() {
-    if (!isContextValid()) { stopAutomation(); return; }
     if (isProcessingQuiz) return;
     
     const options = Array.from(document.querySelectorAll('button[role="radio"], input[type="radio"]')).filter(isVisible);
@@ -158,7 +145,6 @@ async function checkPageState() {
 }
 
 function enforceVideoFeatures(applySpeed) {
-    if (!isContextValid()) return;
     const speed = parseFloat(forcedVideoSpeed) || 11;
     document.querySelectorAll('video').forEach(v => {
         if (applySpeed && Math.abs(v.playbackRate - speed) > 0.01) {
@@ -179,9 +165,7 @@ function enforceVideoFeatures(applySpeed) {
 
 async function solveQuiz(payload, optionsText, optionEls, submitButton) {
     return new Promise((res) => {
-        if (!isContextValid()) { res({ success: false, rateLimit: false }); return; }
         chrome.runtime.sendMessage({ action: "solveQuiz", questionData: { question: payload, options: optionsText } }, (resp) => {
-            if (!isContextValid()) { res({ success: false, rateLimit: false }); return; }
             if (!resp || resp.error) {
                 res({ success: false, rateLimit: (resp && resp.error === "RATE_LIMIT_HIT") }); 
                 return;
