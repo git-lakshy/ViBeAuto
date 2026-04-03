@@ -20,7 +20,14 @@ chrome.storage.local.get(['autoEnabled', 'vcamEnabled', 'vcamSource', 'vidSpeed'
         chrome.storage.local.get(['speedEnabled', 'autoEnabled'], (s) => {
             if (s.speedEnabled || s.autoEnabled) enforceVideoFeatures(s.speedEnabled);
         });
-    }, 1000);
+    }, 200);
+
+    // Manual Pause Detection: If user clicks the video, mark it
+    document.addEventListener('click', (e) => {
+        if (e.target.tagName === 'VIDEO') {
+            e.target.dataset.vibeManualPause = e.target.paused ? "" : "true";
+        }
+    }, true);
 
     if (window.location.hostname === 'vibe.vicharanashala.ai') {
         if (res.vcamEnabled) updateVCam(true, res.vcamSource);

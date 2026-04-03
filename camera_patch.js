@@ -82,27 +82,55 @@
         return originalGetUserMedia(constraints);
     };
 
-    // --- Phase 2: Visibility Spoofing (Background Automation) ---
+    // --- Phase 2: Visibility Spoofing ---
     // Trick the site into thinking it is always visible and active
-    Object.defineProperty(document, 'visibilityState', {
-        get: () => 'visible',
-        configurable: true
+    const alwaysVisible = () => 'visible';
+    const alwaysFalse = () => false;
+
+    Object.defineProperty(document, 'visibilityState', { get: alwaysVisible, configurable: true });
+    Object.defineProperty(document, 'webkitVisibilityState', { get: alwaysVisible, configurable: true });
+    Object.defineProperty(document, 'hidden', { get: alwaysFalse, configurable: true });
+    Object.defineProperty(document, 'webkitHidden', { get: alwaysFalse, configurable: true });
+
+    // Block events that trigger pausing or "away" state
+    const blockEvent = (e) => {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        return false;
+    };
+
+    ['visibilitychange', 'webkitvisibilitychange', 'blur', 'focusout', 'pagehide', 'mouseleave'].forEach(evt => {
+        window.addEventListener(evt, blockEvent, true);
+        document.addEventListener(evt, blockEvent, true);
     });
 
-    Object.defineProperty(document, 'hidden', {
-        get: () => false,
-        configurable: true
-    });
+    // Lock event properties so the site cannot assign its own listeners
+    const lockProperty = (obj, prop) => {
+        Object.defineProperty(obj, prop, {
+            set: () => {},
+            get: () => null,
+            configurable: true
+        });
+    };
+    lockProperty(window, 'onblur');
+    lockProperty(window, 'onfocus');
+    lockProperty(window, 'onfocusout');
+    lockProperty(document, 'onvisibilitychange');
 
-    // Stop "visibilitychange" events from pausing the site
-    window.addEventListener('visibilitychange', (e) => {
-        e.stopImmediatePropagation();
+    // Video Protection: Prevent site from auto-pausing the video
+    document.addEventListener('pause', (e) => {
+        if (e.target.tagName === 'VIDEO' && !e.target.ended && !e.target.dataset.vibeManualPause) {
+            e.target.play().catch(() => {});
+        }
     }, true);
 
-    // Stop "blur" events which some sites use to detect loss of focus
-    window.addEventListener('blur', (e) => {
-        e.stopImmediatePropagation();
-    }, true);
+    // Patch requestAnimationFrame to keep running at high speed in background
+    const originalRAF = window.requestAnimationFrame;
+    window.requestAnimationFrame = (callback) => {
+        return originalRAF(() => {
+            callback(performance.now());
+        });
+    };
 
     console.log("ViBe Auto: Camera Patch + Visibility Spoofing Loaded.");
 })();
