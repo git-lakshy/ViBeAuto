@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const vcamFileSection = getEl('vcamGallerySection');
     const vcamFileInput = getEl('vcamFileInput');
     const vcamFileNameDisplay = getEl('vcamFileName');
+    const deleteVcamBtn = getEl('deleteVcamBtn');
     const vidSpeedInput = getEl('vidSpeed');
     const toggleSpeedBtn = getEl('toggleSpeedBtn');
     const saveStatus = getEl('saveStatus');
@@ -32,7 +33,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (res.geminiApiKey) geminiKeyInput.value = res.geminiApiKey;
         if (res.groqApiKey) groqKeyInput.value = res.groqApiKey;
         if (res.modelChoice) modelChoiceInput.value = res.modelChoice;
-        if (res.vcamFileName) vcamFileNameDisplay.innerText = res.vcamFileName;
+        if (res.vcamFileName) {
+            vcamFileNameDisplay.innerText = res.vcamFileName;
+            deleteVcamBtn.style.display = 'inline-block';
+        }
         
         vidSpeedInput.value = res.vidSpeed || 11;
         if (res.vidSpeed === undefined) chrome.storage.local.set({ vidSpeed: 11 });
@@ -82,11 +86,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    deleteVcamBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        chrome.storage.local.set({ vcamSource: null, vcamFileName: null }, () => {
+            vcamFileNameDisplay.innerText = 'No video selected';
+            deleteVcamBtn.style.display = 'none';
+        });
+    });
+
     vcamFileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
+            if (!file.type.startsWith('video/')) {
+                alert("Please select a video file. images are not supported for custom upload.");
+                return;
+            }
             vcamFileNameDisplay.innerText = file.name;
-            if (file.size > 5 * 1024 * 1024) alert("Large file detected. May fail to load.");
+            deleteVcamBtn.style.display = 'inline-block';
             const reader = new FileReader();
             reader.onload = (ev) => chrome.storage.local.set({ vcamSource: ev.target.result, vcamFileName: file.name });
             reader.readAsDataURL(file);

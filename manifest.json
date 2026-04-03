@@ -41,7 +41,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["camera_patch.js"],
+      "resources": ["camera_patch.js", "default.jpg"],
       "matches": [
         "https://vibe.vicharanashala.ai/*",
         "https://*.youtube.com/*",

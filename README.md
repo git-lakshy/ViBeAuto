@@ -1,2 +1,2 @@
 
-ViBe Auto is a Chrome extension for you know what.
+ViBeAuto is a Browser extension for you know what.

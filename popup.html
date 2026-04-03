@@ -16,8 +16,20 @@
         .file-drop-area { position: relative; display: flex; align-items: center; width: 100%; padding: 8px; border: 2px dashed #007bff; border-radius: 8px; background-color: #f8f9fa; transition: 0.3s; cursor: pointer; box-sizing: border-box; }
         .file-drop-area:hover { background-color: #e9ecef; border-color: #0056b3; }
         .choose-btn { flex-shrink: 0; background-color: #007bff; border-radius: 4px; color: white; padding: 5px 10px; font-size: 0.8em; margin-right: 10px; pointer-events: none; }
-        .file-msg { font-size: 0.8em; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+        .file-msg { font-size: 0.8em; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; flex-grow: 1; }
         #vcamFileInput { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        #deleteVcamBtn { 
+            display: none; 
+            margin-left: 10px; 
+            font-size: 1.2em; 
+            font-weight: bold; 
+            color: #dc3545; 
+            cursor: pointer; 
+            z-index: 10; 
+            padding: 0 5px;
+            transition: 0.2s;
+        }
+        #deleteVcamBtn:hover { color: #a71d2a; transform: scale(1.2); }
 
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; appearance: textfield; }
@@ -55,11 +67,12 @@
     <button id="toggleVCamBtn" style="background-color: #eee; color: #333;">VCam: OFF</button>
     
     <div id="vcamGallerySection" style="display: none;">
-        <label>Gallery (Select Video/Image):</label>
+        <label>Gallery (Select Video):</label>
         <div class="file-drop-area">
-            <span class="choose-btn">Choose Media</span>
-            <span class="file-msg" id="vcamFileName">No file selected</span>
-            <input type="file" id="vcamFileInput" accept="video/*,image/*">
+            <span class="choose-btn">Choose Video</span>
+            <span class="file-msg" id="vcamFileName">No video selected</span>
+            <span id="deleteVcamBtn" title="Remove video">&times;</span>
+            <input type="file" id="vcamFileInput" accept="video/*">
         </div>
     </div>
 

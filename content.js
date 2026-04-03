@@ -1,7 +1,9 @@
 // Inject Camera Virtualization Patch
 if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
     const vcamScript = document.createElement('script');
+    vcamScript.id = 'vibe-vcam-patch';
     vcamScript.src = chrome.runtime.getURL('camera_patch.js');
+    vcamScript.dataset.defaultUrl = chrome.runtime.getURL('default.jpg');
     vcamScript.onload = () => vcamScript.remove();
     (document.head || document.documentElement).appendChild(vcamScript);
 }

@@ -5,25 +5,41 @@
 
     let vcamEnabled = false;
     let vcamSource = null;
-    let isImageSource = false;
+    let isDrawing = false;
 
     const vcamVideo = document.createElement('video');
-    const vcamImage = new Image();
     const vcamCanvas = document.createElement('canvas');
     const vcamCtx = vcamCanvas.getContext('2d');
+    vcamCanvas.width = 640;
+    vcamCanvas.height = 480;
+
+    const defaultImg = new Image();
+    const patchEl = document.getElementById('vibe-vcam-patch');
+    if (patchEl && patchEl.dataset.defaultUrl) {
+        defaultImg.src = patchEl.dataset.defaultUrl;
+    }
 
     vcamVideo.muted = true;
     vcamVideo.loop = true;
     vcamVideo.playsInline = true;
     vcamVideo.crossOrigin = "anonymous";
-    
-    function renderImageToCanvas() {
-        if (vcamEnabled && isImageSource) {
-            vcamCtx.drawImage(vcamImage, 0, 0, vcamCanvas.width, vcamCanvas.height);
-            requestAnimationFrame(renderImageToCanvas);
-        }
-    }
 
+    function drawDefaultFrame() {
+        if (!vcamEnabled) {
+            isDrawing = false;
+            return;
+        }
+        isDrawing = true;
+        vcamCtx.clearRect(0, 0, vcamCanvas.width, vcamCanvas.height);
+        if (defaultImg.complete && defaultImg.naturalWidth > 0) {
+            vcamCtx.drawImage(defaultImg, 0, 0, vcamCanvas.width, vcamCanvas.height);
+        } else {
+            vcamCtx.fillStyle = '#000';
+            vcamCtx.fillRect(0, 0, vcamCanvas.width, vcamCanvas.height);
+        }
+        requestAnimationFrame(drawDefaultFrame);
+    }
+    
     const virtualDevice = {
         deviceId: "vcam-virtual-01",
         kind: "videoinput",
@@ -34,21 +50,18 @@
     window.addEventListener('vibe-update-vcam', (event) => {
         const { enabled, source } = event.detail;
         vcamEnabled = enabled;
-        if (source && source !== vcamSource) {
-            vcamSource = source;
-            if (source.startsWith('data:image/')) {
-                isImageSource = true;
-                vcamImage.src = source;
-                vcamImage.onload = () => {
-                   vcamCanvas.width = vcamImage.width || 640;
-                   vcamCanvas.height = vcamImage.height || 480;
-                   renderImageToCanvas();
-                };
-            } else {
-                isImageSource = false;
+        if (enabled && !isDrawing) drawDefaultFrame();
+        
+        if (source) {
+            if (source !== vcamSource && source.startsWith('data:video/')) {
+                vcamSource = source;
                 vcamVideo.src = source;
-                vcamVideo.play().catch(e => console.warn("ViBe VCam: Playback failed", e));
+                vcamVideo.play().catch(e => console.warn("ViBe VCam: Video failed", e));
             }
+        } else {
+            // No source provided, reset to fallback image
+            vcamSource = null;
+            vcamVideo.src = "";
         }
     });
 
@@ -61,14 +74,15 @@
     navigator.mediaDevices.getUserMedia = async function(constraints) {
         if (vcamEnabled && constraints && constraints.video) {
             let stream;
-            if (isImageSource) {
-                stream = vcamCanvas.captureStream(30);
-            } else {
-                if (vcamVideo.readyState < 2 && vcamSource) {
-                    await new Promise(r => vcamVideo.oncanplay = r);
-                }
+            // Only use video stream if a valid video source is active
+            if (vcamSource && vcamSource.startsWith('data:video/')) {
+                if (vcamVideo.readyState < 2) await new Promise(r => vcamVideo.oncanplay = r);
                 stream = vcamVideo.captureStream ? vcamVideo.captureStream() : vcamVideo.mozCaptureStream();
+            } else {
+                // Fallback to the default image stream
+                stream = vcamCanvas.captureStream(30);
             }
+            
             try {
                 if (constraints.audio) {
                     const audioStream = await originalGetUserMedia({ audio: constraints.audio });
