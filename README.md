@@ -2,7 +2,8 @@ ViBeAuto is a Browser extension for you know what.
 
 ## How to use
 
-- Download the zip file - https://github.com/git-lakshy/ViBeAuto/releases/tag/v2.0
+- Recommended browser chrome
+- Download the zip file - https://github.com/git-lakshy/ViBeAuto/releases/download/v2.5/v2.5.zip 
 - Extract the zip file
 - Open chrome://extensions/
 - Enable developer mode
@@ -10,8 +11,14 @@ ViBeAuto is a Browser extension for you know what.
 - Select the extracted folder
 - Extension added, now set up and run it
 
+## Set up steps
+- Vcam : virtualise your camera | Speed : forced speed up | Automation : Hands free navigation along with vid and quiz completing
+- Groq api is recommended get on here - (https://console.groq.com/keys)
+- Put api key > select correct model > save settings > automation on > select desired speed > turn speed on > select vcam off/on > save settings > reload page > hurrah
+
 ### Notes
 - require API Keys - Groq API Key or Gemini API Key
-- Tested on chrome browser only
+- Tested on multiple browsers
 - hands free working :P
-<img width="360" height="703" alt="image" src="https://github.com/user-attachments/assets/ae06598d-3a1e-4596-b744-5fd1626fcde8" />
+- vcam has default streaming now, no need to add video to start
+<img width="373" height="688" alt="image" src="https://github.com/user-attachments/assets/de3bdc15-87c3-4e08-b047-b706a19c2fd9" />
