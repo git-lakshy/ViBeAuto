@@ -21,4 +21,5 @@ ViBeAuto is a Browser extension for you know what.
 - Tested on multiple browsers
 - hands free working :P
 - vcam has default streaming now, no need to add video to start
-<img width="373" height="688" alt="image" src="https://github.com/user-attachments/assets/de3bdc15-87c3-4e08-b047-b706a19c2fd9" />
+<img width="361" height="707" alt="image" src="https://github.com/user-attachments/assets/4a0e42ec-e553-4ecc-a85a-fab190e2b458" />
+
