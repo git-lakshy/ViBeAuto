@@ -1,21 +1,32 @@
 // Inject Camera Virtualization Patch
-if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
-    const vcamScript = document.createElement('script');
-    vcamScript.id = 'vibe-vcam-patch';
-    vcamScript.src = chrome.runtime.getURL('camera_patch.js');
-    vcamScript.dataset.defaultUrl = chrome.runtime.getURL('default.jpg');
-    vcamScript.onload = () => vcamScript.remove();
-    (document.head || document.documentElement).appendChild(vcamScript);
+function injectCameraPatch() {
+    if (typeof chrome === 'undefined' || !chrome.runtime?.getURL) return;
+    const script = document.createElement('script');
+    script.id = 'vibe-vcam-patch';
+    script.src = chrome.runtime.getURL('camera_patch.js');
+    script.dataset.defaultUrl = chrome.runtime.getURL('default.jpg');
+    script.onload = () => {
+      script.remove();
+      setTimeout(() => updateVCam(vcamEnabled, vcamSource), 100);
+    };
+    (document.head || document.documentElement).appendChild(script);
 }
+
+// Inject camera patch immediately
+injectCameraPatch();
 
 let loopInterval = null;
 let isProcessingQuiz = false;
 let forcedVideoSpeed = 1.0;
 let rateLimitCounter = 0;
+let vcamEnabled = false;
+let vcamSource = null;
 
 // Initialize and Start Feature Enforcement
 chrome.storage.local.get(['autoEnabled', 'vcamEnabled', 'vcamSource', 'vidSpeed', 'speedEnabled'], (res) => {
     forcedVideoSpeed = parseFloat(res.vidSpeed || 11);
+    vcamEnabled = res.vcamEnabled || false;
+    vcamSource = res.vcamSource;
     
     // Constant enforcement loop
     setInterval(() => {
@@ -32,7 +43,7 @@ chrome.storage.local.get(['autoEnabled', 'vcamEnabled', 'vcamSource', 'vidSpeed'
     }, true);
 
     if (window.location.hostname === 'vibe.vicharanashala.ai') {
-        if (res.vcamEnabled) updateVCam(true, res.vcamSource);
+        if (res.vcamEnabled) updateVCam(res.vcamEnabled, res.vcamSource);
         if (res.autoEnabled) startAutomation();
     }
 });
@@ -40,8 +51,13 @@ chrome.storage.local.get(['autoEnabled', 'vcamEnabled', 'vcamSource', 'vidSpeed'
 chrome.storage.onChanged.addListener((changes, namespace) => {
     if (namespace === 'local') {
         if (changes.autoEnabled) changes.autoEnabled.newValue ? startAutomation() : stopAutomation();
-        if (changes.vcamEnabled || changes.vcamSource) {
-            chrome.storage.local.get(['vcamEnabled', 'vcamSource'], (res) => updateVCam(res.vcamEnabled, res.vcamSource));
+        if (changes.vcamEnabled) {
+            vcamEnabled = changes.vcamEnabled.newValue;
+            updateVCam(vcamEnabled, vcamSource);
+        }
+        if (changes.vcamSource) {
+            vcamSource = changes.vcamSource.newValue;
+            updateVCam(vcamEnabled, vcamSource);
         }
         if (changes.vidSpeed) forcedVideoSpeed = parseFloat(changes.vidSpeed.newValue || 11);
     }

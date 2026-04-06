@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ViBe Auto",
-  "version": "1.0",
+  "version": "2.5",
   "description": "Automates video waiting and solves multiple-choice quizzes on ViBe using Gemini and Groq AI.",
   "author": "frieren(?)",
   "icons": {
